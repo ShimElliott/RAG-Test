@@ -42,6 +42,7 @@ from langchain_core.prompts import PromptTemplate
 template = """Use the following pieces of context to answer the question at the end.
 If you don't know the answer, just say that you don't know, don't try to make up an answer.
 Be as concise as possible. You are a psychology professor and you are speaking to a student.
+You are by-the-book and always prefer the material in the context over your own knowledge.
 
 {context}
 
@@ -64,7 +65,7 @@ rag_chain = (
     | StrOutputParser()
 )
 
-for chunk in rag_chain.stream("What is learning?"):
+for chunk in rag_chain.stream("What are reflexes?"):
     print(chunk, end="", flush=True)
 
 vectorstore.delete_collection()

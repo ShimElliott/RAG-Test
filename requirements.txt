@@ -1,10 +1,11 @@
 langchain
 langchain-community
-langchain-chroma
+# langchain-chroma
 langchain-openai
 beautifulsoup4
 python-dotenv
 pypdf
+langgraph
 
 # Will use when issues are resolved.
 # langchain-unstructured

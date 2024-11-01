@@ -25,9 +25,12 @@ from langchain_core.vectorstores import InMemoryVectorStore
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain.tools.retriever import create_retriever_tool
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import START, StateGraph
 from langgraph.graph.message import add_messages
+from langgraph.prebuilt import create_react_agent
+from langgraph.checkpoint.memory import MemorySaver
 from typing_extensions import Annotated, TypedDict
 from langchain import hub
 
@@ -115,16 +118,25 @@ workflow.add_node("model", call_model)
 memory = MemorySaver()
 app = workflow.compile(checkpointer=memory)
 
+tool = create_retriever_tool(
+    retriever,
+    "pdf_retriever_toll",
+    "Searches and returns context from the given pdf",
+)
+tools = [tool]
+
+agent_executor = create_react_agent(
+    llm,
+    tools,
+    checkpointer = memory
+)
+
 config = {"configurable": {"thread_id": "user1"}}
+query = "What experiments did Pavlov do?"
 
-result = app.invoke(
-    {"input": "What was Pavlov?"},
+for event in agent_executor.stream(
+    {"messages": [HumanMessage(content=query)]},
     config=config,
-)
-print(result["answer"])
-
-result = app.invoke(
-    {"input": "What was he known for?"},
-    config=config,
-)
-print(result["answer"])
+    stream_mode="values",
+):
+    event["messages"][-1].pretty_print()

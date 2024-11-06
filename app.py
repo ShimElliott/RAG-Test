@@ -34,8 +34,13 @@ from langgraph.checkpoint.memory import MemorySaver
 from typing_extensions import Annotated, TypedDict
 from langchain import hub
 
-# Gets data from the pdf file.
+# 
+# Tools are defined here
+# 
+
+# Gets data from the given pdf file.
 from langchain_community.document_loaders import PyPDFLoader
+
 loader = PyPDFLoader("data.pdf")
 
 docs = loader.load()
@@ -50,8 +55,27 @@ vectorstore = InMemoryVectorStore.from_documents(
     embedding=OpenAIEmbeddings()
 )
 
-# Retrieve and generate using data from the pdf file.
 retriever = vectorstore.as_retriever()
+
+pdf_retriever_tool = create_retriever_tool(
+    retriever,
+    "pdf_retriever_toll",
+    "Searches and returns context from the given pdf",
+)
+
+from langchain_community.tools.tavily_search import TavilySearchResults
+
+# Gets data from the web
+search_tool = TavilySearchResults(max_results=3)
+
+tools = [
+    pdf_retriever_tool,
+    search_tool,
+]
+
+#
+# System Prompts
+#
 
 # Contextualize Question
 contextualize_q_system_prompt = (
@@ -118,13 +142,6 @@ workflow.add_node("model", call_model)
 memory = MemorySaver()
 app = workflow.compile(checkpointer=memory)
 
-tool = create_retriever_tool(
-    retriever,
-    "pdf_retriever_toll",
-    "Searches and returns context from the given pdf",
-)
-tools = [tool]
-
 agent_executor = create_react_agent(
     llm,
     tools,
@@ -132,7 +149,7 @@ agent_executor = create_react_agent(
 )
 
 config = {"configurable": {"thread_id": "user1"}}
-query = "What experiments did Pavlov do?"
+query = "What are reflexes"
 
 for event in agent_executor.stream(
     {"messages": [HumanMessage(content=query)]},

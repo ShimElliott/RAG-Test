@@ -6,6 +6,9 @@ beautifulsoup4
 python-dotenv
 pypdf
 langgraph
+langgraph-checkpoint-sqlite
+tavily-python
+
 
 # Will use when issues are resolved.
 # langchain-unstructured

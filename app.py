@@ -33,28 +33,43 @@ from langgraph.checkpoint.memory import MemorySaver
 from typing_extensions import Annotated, TypedDict
 
 # Imports features
-from modules.tools import tools
-import modules.prompts as prompts
+import modules.agents as agents
 
+def main():
+    # Define test profile with default values
+    test_profile = {
+        "messages": [],
+        "language": "English",  # Default language
+        "age": 25,              # Default age
+        "name": "Bob",          # Default name
+        "preferences": "Cowboy Speak" # Default preferences
+    }
 
-memory = MemorySaver()
+    print("Enter text (type 'exit' to quit):")
+    
+    while True:
+        user_input = input(">> ")
+        
+        if user_input.lower() == 'exit':  # Exit condition
+            print("Exiting program.")
+            break
+        else:
+            # Append the user input to the messages list
+            test_profile["messages"].append(user_input)
+            
+            # Create the state object
+            state = {
+                "messages": test_profile["messages"],
+                "language": test_profile["language"],
+                "age": test_profile["age"],
+                "name": test_profile["name"],
+                "preferences": test_profile["preferences"],  # Use style instead of preferences
+            }
+            
+            # Call the model with the state
+            response = agents.call_model(state)
 
-# 
-# Agents
-# 
+            print("AI Response:", response)
 
-agent_executor = create_react_agent(
-    llm,
-    tools,
-    checkpointer = memory
-)
-
-config = {"configurable": {"thread_id": "user1"}}
-query = "What are reflexes"
-
-for event in agent_executor.stream(
-    {"messages": [HumanMessage(content=query)]},
-    config=config,
-    stream_mode="values",
-):
-    event["messages"][-1].pretty_print()
+if __name__ == "__main__":
+    main()
